@@ -2,6 +2,8 @@
 //library
 import { onMounted, reactive, ref } from "vue"
 import { useRouter, useRoute, RouterLink } from "vue-router"
+import { storage } from '@/firebase'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 // component
 import AdminLayout from "@/layouts/AdminLayout.vue"
@@ -32,6 +34,7 @@ const formData = [
   {
     name: "Image",
     field: "imageUrl",
+    type: 'upload-image'
   },
   {
     name: "Price",
@@ -65,6 +68,28 @@ const updateProduct = async () => {
     }
 }
 
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0]
+
+  let mainPath = ''
+
+  if (productIndex.value !== -1) {
+    mainPath = productIndex.value + '-'
+  }
+
+  if (file) {
+    const uploadRef = storageRef(
+      storage,
+      `products/${mainPath}${file.name}`
+    )
+    
+    const snapshot = await uploadBytes(uploadRef, file)
+    const downloadUrl = await getDownloadURL(snapshot.ref)
+    productData.imageUrl = downloadUrl
+      // profileImageUrl.value = e.target.result
+    }
+}
+
 onMounted(async () => {
   if(route.params.id) {
     productIndex.value = route.params.id
@@ -93,11 +118,21 @@ onMounted(async () => {
           <label class="label">
             <span class="label-text">{{ form.name }}</span>
           </label>
+
           <input 
+            v-if="form.type !== 'upload-image'"
             type="text" 
             class="input input-bordered w-full" 
             v-model="productData[form.field]"
             />
+          <div v-else>
+            <div class="avatar">
+              <div class="w-24 rounded-full">
+                <img :src="productData[form.field]">
+              </div>
+            </div>
+            <input type="file" @change="handleFileUpload">
+          </div>
         </div>
       </div>
       <div class="divider"></div>

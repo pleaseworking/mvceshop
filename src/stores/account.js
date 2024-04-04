@@ -11,7 +11,8 @@ import {
 import { 
   doc,
   getDoc,
-  setDoc
+  setDoc,
+  updateDoc
 } from "firebase/firestore"
 
 import { auth, db } from "@/firebase"
@@ -55,6 +56,8 @@ export const useAccountStore = defineStore("account", {
             }
             this.isLoggedIn = true
 
+            this.profile.email = user.email
+
             // สำหรับการสร้าง user = สร้าง data เข้า collection user ทันที
             // member
             resolve(true)
@@ -63,6 +66,20 @@ export const useAccountStore = defineStore("account", {
           }
         })
       })
+    },
+    async updateProfile (userData) {
+      try {
+        
+      const updateUserData = {
+        fullname: userData.fullname,
+        imageUrl: userData.imageUrl
+      }
+
+      const userRef = doc(db, `users/${this.user.uid}`)
+      await updateDoc(userRef, updateUserData)
+    } catch (error) {
+      console.log('error', error)
+    }
     },
     async signInWithGoogle() {
       try {

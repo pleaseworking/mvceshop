@@ -1,49 +1,59 @@
 <script setup>
 //library
 import { ref,onMounted } from 'vue'
-
+import { storage } from '@/firebase'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 // component
 import UserLayout from '@/layouts/UserLayout.vue'
 
+// store
+import { useAccountStore } from '@/stores/account'
+
+const accountStore = useAccountStore()
 
 //variable
-const profileImageUrl = ref('https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg')
+const profileImageUrl = ref()
 const email = ref('')
-const name = ref('')
+const fullname = ref('')
+
 
 
 onMounted(() => {
-  let profileData = localStorage.getItem('profile-data')
-  if (profileData) {
-    profileData = JSON.parse(profileData)
-    profileImageUrl.value = profileData.imageUrl
-    name.value = profileData.name
-    email.value = profileData.email
-  }
-  localStorage.setItem('profile-data', JSON.stringify(profileData))
-  alert('Success update profile')
+  const profileData = accountStore.profile
+  profileImageUrl.value = (profileData.imageUrl || 'https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg')
+  fullname.value = profileData.fullname
+  email.value = profileData.email
 })
 
 // function
-const handleFileUpload = (event) => {
+const handleFileUpload = async (event) => {
   const file = event.target.files[0]
 
   if (file) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      profileImageUrl.value = e.target.result
+    const uploadRef = storageRef(
+      storage,
+      `users/${accountStore.user.uid}/${file.name}`
+    )
+    
+    const snapshot = await uploadBytes(uploadRef, file)
+    const downloadUrl = await getDownloadURL(snapshot.ref)
+    profileImageUrl.value = downloadUrl
+      // profileImageUrl.value = e.target.result
     }
-    reader.readAsDataURL(file)
-  }
+
 }
 
-const updateProfile = () => {
-  const profileData = {
-    imageUrl: profileImageUrl.value,
-    name: name.value,
-    email: email.value
+const updateProfile = async () => {
+  try {
+    const profileData = {
+      imageUrl: profileImageUrl.value,
+      fullname: fullname.value,
+      email: email.value
+    }
+      await accountStore.updateProfile(profileData)
+  } catch (error) {
+      console.log('error', error)
   }
-  localStorage.setItem('profile-data', JSON.stringify(profileData))
 }
 </script>
 
@@ -65,13 +75,13 @@ const updateProfile = () => {
           <label class="label">
             <span class="label-text">Email</span>
           </label>
-          <input v-model="email" type="text" placeholder="Type here" class="input input-bordered w-full" />
+          <input type="text" placeholder="Type here" class="input input-bordered w-full" :value="email" disabled/>
         </div>
           <div class="form-control w-full">
           <label class="label">
             <span class="label-text">Name</span>
           </label>
-          <input v-model="name" type="text" placeholder="Type here" class="input input-bordered w-full" />
+          <input v-model="fullname" type="text" placeholder="Type here" class="input input-bordered w-full" />
         </div>
         <button @click="updateProfile" class="btn btn-neutral w-full mt-4">Update profile</button>
         </div>

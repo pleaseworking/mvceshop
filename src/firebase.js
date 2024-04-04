@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 import { getAuth, connectAuthEmulator } from 'firebase/auth'
-
+import { getStorage, connectStorageEmulator } from 'firebase/storage'
 const firebaseConfig = {
     apiKey: 'AIzaSyAEE5mekvCS4K3u6eeDLQPuDWG212xEr6A',
     authDomain: 'mvc-eshop-test.firebaseapp.com',
@@ -20,7 +20,11 @@ const firebaseConfig = {
   const auth = getAuth(app)
   connectAuthEmulator(auth, 'http://127.0.0.1:9099')
 
+  const storage = getStorage()
+  connectStorageEmulator(storage, '127.0.0.1', 9199)
+  
   export {
     db,
-    auth
+    auth,
+    storage
   }

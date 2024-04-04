@@ -1,6 +1,26 @@
 <script setup>
 //library
-import { RouterLink } from 'vue-router'
+import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { useAccountStore } from '@/stores/account'
+import { useEventStore } from '@/stores/event'
+
+const router = useRouter()
+const accountStore = useAccountStore()
+const eventStore = useEventStore()
+
+const email = ref('')
+const password = ref('')
+
+const login = async () => {
+  try {
+    await accountStore.signInAdmin(email.value, password.value)
+    router.push({ name: 'admin-dashboard' })
+  } catch (error) {
+    eventStore.popupMessage('error', error.message)
+  }
+}
+
 </script>
 
 <template>
@@ -13,17 +33,17 @@ import { RouterLink } from 'vue-router'
           <label class="label">
             <span class="label-text">Email</span>
           </label>
-          <input type="text" placeholder="Your email" class="input input-bordered w-full"/>
+          <input v-model="email" type="text" placeholder="Your email" class="input input-bordered w-full"/>
         </div>
         <div class="form-control w-full">
           <label class="label">
             <span class="label-text">Password</span>
           </label>
-          <input type="password" placeholder="Your password" class="input input-bordered w-full"/>
+          <input v-model="password" type="password" placeholder="Your password" class="input input-bordered w-full"/>
         </div>
-        <RouterLink :to="{ name: 'admin-dashboard' }" class="btn btn-neutral mt-4 w-full">
+        <button @click="login" class="btn btn-neutral mt-4 w-full">
             Login
-        </RouterLink>
+        </button>
       </div>
     </div>
   </div>

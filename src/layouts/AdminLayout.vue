@@ -1,10 +1,13 @@
 <script setup>
 //library
 import { ref, onMounted } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { useAccountStore } from '@/stores/account'
 
 // config variable
 const route = useRoute()
+const accountStore = useAccountStore()
+const router = useRouter()
 
 // variable
 const menus = [
@@ -23,11 +26,7 @@ const menus = [
     {
         name: 'Order',
         routeName: 'admin-orders-list'
-    },            
-    {
-        name: 'Logout',
-        routeName: 'admin-login'
-    },         
+    }                
 ]
 
 const activeMenu = ref('')
@@ -36,6 +35,17 @@ onMounted(() => {
     // console.log(route.name)
     activeMenu.value = route.name
 })
+
+
+const logout = async () => {
+    try {
+        await accountStore.logout()
+        router.push({ name: 'login' })
+    } catch (error) {
+        console.log('error', error)
+    }
+}
+
 
 </script>
 
@@ -60,6 +70,9 @@ onMounted(() => {
             :class="menu.routeName === activeMenu ? 'active' : ''"
             >{{ menu.name }}</RouterLink>
         </li>
+        <li>
+            <a @click="logout">Logout</a>
+        </li>        
       </ul>
     </div>
   </div>

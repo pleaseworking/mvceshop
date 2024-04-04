@@ -1,7 +1,7 @@
 <script setup>
 //library
 import { onMounted, reactive, ref } from "vue"
-import { useRouter, useRoute } from "vue-router"
+import { useRouter, useRoute, RouterLink } from "vue-router"
 
 // component
 import AdminLayout from "@/layouts/AdminLayout.vue"
@@ -52,22 +52,25 @@ const productIndex = ref(-1)
 const mode = ref('ADD')
 
 //function
-const updateProduct = () => {
-    // console.log(productData)
-    if (mode.value === 'EDIT') {
-      adminProductStore.updateProduct(productIndex.value, productData)
-    } else {
-      adminProductStore.addProduct(productData)
+const updateProduct = async () => {
+    try {
+      if (mode.value === 'EDIT') {
+        await adminProductStore.updateProduct(productIndex.value, productData)
+      } else {
+        await adminProductStore.addProduct(productData)
+      }
+        router.push({ name: 'admin-products-list' })
+      } catch (error) {
+        console.log('error', error)
     }
-    router.push({ name: 'admin-products-list' })
 }
 
-onMounted(() => {
+onMounted(async () => {
   if(route.params.id) {
-    productIndex.value = parseInt(route.params.id)
+    productIndex.value = route.params.id
     mode.value = 'EDIT'
 
-    const selectedProduct = adminProductStore.getProduct(productIndex.value)
+    const selectedProduct = await adminProductStore.getProduct(productIndex.value)
     
     productData.name = selectedProduct.name
     productData.imageUrl = selectedProduct.imageUrl
@@ -112,7 +115,7 @@ onMounted(() => {
       </div>
       <div>
         <div class="flex justify-end mt-4">
-          <button class="btn btn-ghost">Back</button>
+          <RouterLink :to="{ name: 'admin-products-list'}" class="btn btn-ghost">Back</RouterLink>
           <button class="btn btn-neutral" @click="updateProduct()">{{ mode }}</button>
         </div>
       </div>

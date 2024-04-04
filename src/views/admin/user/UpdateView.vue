@@ -1,6 +1,6 @@
 <script setup>
 //library
-import { ref, reactive,onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRoute,useRouter } from 'vue-router'
 // component
 import AdminLayout from '@/layouts/AdminLayout.vue'
@@ -14,12 +14,14 @@ const adminUserStore = useAdminUserStore()
 const eventStore = useEventStore()
 const route = useRoute()
 const router = useRouter()
+
 const userIndex = ref(-1)
 const userData = reactive({
-    fullname: '',
-    role: '',
-    status: ''
+  fullname: '',
+  role: '',
+  status: ''
 })
+
 
 // variable
 const formData = [
@@ -32,7 +34,7 @@ const formData = [
         name: 'Role',
         field: 'role',
         type: 'select',
-        dropdownList: ['admin', 'moderator', 'user'],
+        dropdownList: ['admin', 'moderator', 'member'],
     },
     {
         name: 'Status',
@@ -43,19 +45,18 @@ const formData = [
 ]
 
 // function
-const updateUser = () => {
-    console.log(userIndex.value, userData)
-    adminUserStore.updateUser(userIndex.value, userData)
+const updateUser = async () => {
+    await adminUserStore.updateUser(userIndex.value, userData)
     eventStore.popupMessage('info', 'Update user successful')
     router.push({ name: 'admin-users-list' })
 }
 
 
-onMounted(() => {
+onMounted(async () => {
     if (route.params.id) {
-        userIndex.value = parseInt(route.params.id)
-        const selectedUser = adminUserStore.getUser(userIndex.value)
-
+        userIndex.value = route.params.id
+        const selectedUser = await adminUserStore.getUser(userIndex.value)
+        
         userData.fullname = selectedUser.fullname
         userData.role = selectedUser.role
         userData.status = selectedUser.status

@@ -1,11 +1,11 @@
 <script setup>
 //library
+import { onMounted } from "vue"
 import { RouterLink } from "vue-router"
 
 //component
 import AdminLayout from "@/layouts/AdminLayout.vue"
-import Edit from "@/components/icons/Edit.vue"
-import Trash from "@/components/icons/Trash.vue"
+
 import Table from "@/components/Table.vue"
 
 //store
@@ -14,13 +14,16 @@ import { useAdminUserStore } from "@/stores/admin/user"
 //config variable
 const adminUserStore = useAdminUserStore()
 
+onMounted(async () => {
+  await adminUserStore.loadUser()
+})
+
 //function
-const changeStatus = (index) => {
+const changeStatus = async (index) => {
   let selectedUser = adminUserStore.list[index]
-  selectedUser.status =
-    selectedUser.status === "active" ? "inactive" : "active"
-  adminUserStore.updateUser(selectedUser)
-};
+  selectedUser.status = selectedUser.status === "active" ? "inactive" : "active"
+  await adminUserStore.updateUser(selectedUser.uid, selectedUser)
+}
 </script>
 
 <template>
@@ -38,7 +41,7 @@ const changeStatus = (index) => {
         <td>
           <div class="flex gap-2">
             <RouterLink
-              :to="{ name: 'admin-users-update', params: { id: index } }"
+              :to="{ name: 'admin-users-update', params: { id: user.uid } }"
               class="btn">Edit
               </RouterLink>
             <button class="btn" @click="changeStatus(index)">

@@ -15,13 +15,18 @@ import { onMounted } from "vue"
 // config variable
 const adminProductStore = useAdminProductStore()
 
-onMounted(() => {
-  adminProductStore.loadProducts()
+onMounted(async () => {
+  await adminProductStore.loadProducts()
 })
 
 //function
-const removeProduct = (index) => {
-  adminProductStore.removeProduct(index)
+const removeProduct = async (index) => {
+  try {
+    await adminProductStore.removeProduct(index)
+    await adminProductStore.loadProducts()
+  } catch (error) {
+    console.log('error', error)
+  }
 }
 </script>
 
@@ -54,11 +59,11 @@ const removeProduct = (index) => {
             <td>
               <div class="flex gap-2">
                 <RouterLink 
-                :to="{ name: 'admin-products-update', params: {id: index} }" 
+                :to="{ name: 'admin-products-update', params: {id: product.productId} }" 
                 class="btn btn-ghost">
                   <Edit></Edit>
                 </RouterLink>
-                <div @click="removeProduct(index)" class="btn btn-ghost">
+                <div @click="removeProduct(product.productId)" class="btn btn-ghost">
                   <Trash></Trash>
                 </div>
               </div>

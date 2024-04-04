@@ -20,10 +20,12 @@ onMounted(async () => {
     try {
       orderData.value = await cartStore.loadCheckout(orderId)
     } catch (error) {
-      console.log(error)
+      alert('order unsuccessful !')
+      location.href = '/'
     }
   }
 })
+
 </script>
 
 <template>

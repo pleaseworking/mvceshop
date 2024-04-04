@@ -1,6 +1,12 @@
 <script setup>
+import { onMounted } from 'vue'
+
+import { useAdminDashboardStore } from '@/stores/admin/dashboard'
+
+const dashboardStore = useAdminDashboardStore()
+
 // component
-import AdminLayout from "@/layouts/AdminLayout.vue";
+import AdminLayout from "@/layouts/AdminLayout.vue"
 
 // variable
 const priceChart = {
@@ -18,12 +24,16 @@ const priceChart = {
       data: [30, 40, 45, 50, 49, 60, 70, 91],
     },
   ],
-};
+}
 
 const categoryChart = {
   options: {},
   series: [44, 55, 41, 17, 15],
-};
+}
+
+onMounted(async () => {
+  await dashboardStore.loadDashboard()
+})
 </script>
 
 <template>
@@ -47,7 +57,7 @@ const categoryChart = {
           </svg>
         </div>
         <div class="stat-title">Order</div>
-        <div class="stat-value">31K</div>
+        <div class="stat-value">{{ dashboardStore.stats.order }}</div>
       </div>
       <div class="stat">
         <div class="stat-figure text-secondary">
@@ -66,7 +76,7 @@ const categoryChart = {
           </svg>
         </div>
         <div class="stat-title">Products</div>
-        <div class="stat-value">4,200</div>
+        <div class="stat-value">{{ dashboardStore.stats.product }}</div>
       </div>
       <div class="stat">
         <div class="stat-figure text-secondary">
@@ -85,7 +95,7 @@ const categoryChart = {
           </svg>
         </div>
         <div class="stat-title">Users</div>
-        <div class="stat-value">1,200</div>
+        <div class="stat-value">{{ dashboardStore.stats.user }}</div>
       </div>
     </div>
     <div class="flex">

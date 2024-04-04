@@ -148,11 +148,11 @@ const handleSearch = (event) => {
       </div>
     </div>
 
-    <div v-if="eventStore.banner.display">
+    <!-- <div v-if="eventStore.banner.display">
       <a :href="eventStore.banner.link" target="_blank">
         <img class="w-full" :src="eventStore.banner.imageUrl">
      </a>
-    </div>
+    </div> -->
     <slot></slot>
     <!-- Footer -->
     <footer class="footer footer-center p-10 bg-primary text-primary-content">

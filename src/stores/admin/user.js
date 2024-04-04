@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia'
 
-import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore'
+import { 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc } from 'firebase/firestore'
 
 import { db } from '@/firebase'
 

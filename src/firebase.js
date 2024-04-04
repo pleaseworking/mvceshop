@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app'
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 import { getAuth, connectAuthEmulator } from 'firebase/auth'
 import { getStorage, connectStorageEmulator } from 'firebase/storage'
+import { getDatabase, connectDatabaseEmulator } from 'firebase/database'
 const firebaseConfig = {
     apiKey: 'AIzaSyAEE5mekvCS4K3u6eeDLQPuDWG212xEr6A',
     authDomain: 'mvc-eshop-test.firebaseapp.com',
@@ -23,8 +24,12 @@ const firebaseConfig = {
   const storage = getStorage()
   connectStorageEmulator(storage, '127.0.0.1', 9199)
   
+  const realtimeDB = getDatabase()
+  connectDatabaseEmulator(realtimeDB, '127.0.0.1', 9001)
+
   export {
     db,
     auth,
-    storage
+    storage,
+    realtimeDB
   }

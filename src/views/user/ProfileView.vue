@@ -40,7 +40,6 @@ const handleFileUpload = async (event) => {
     profileImageUrl.value = downloadUrl
       // profileImageUrl.value = e.target.result
     }
-
 }
 
 const updateProfile = async () => {

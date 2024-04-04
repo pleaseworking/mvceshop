@@ -6,23 +6,26 @@ import { RouterLink, useRouter } from "vue-router"
 // store
 import { useCartStore } from "@/stores/user/cart"
 import { useAccountStore } from "@/stores/account"
+import { useEventStore } from '@/stores/event'
 
 // config variable
 const router = useRouter()
 const cartStore = useCartStore()
 const accountStore = useAccountStore()
+const eventStore = useEventStore()
 
 // variable
 const searchText = ref("")
 
-onMounted(async () => {
-  await accountStore.checkAuth()
+onMounted(() => {
+  eventStore.loadBanner()
 })
 
 // function
 const login = async () => {
   try {
     await accountStore.signInWithGoogle()
+    location.reload()
   } catch (error) {
     console.log("error", error)
   }
@@ -143,6 +146,12 @@ const handleSearch = (event) => {
           </ul>
         </div>
       </div>
+    </div>
+
+    <div v-if="eventStore.banner.display">
+      <a :href="eventStore.banner.link" target="_blank">
+        <img class="w-full" :src="eventStore.banner.imageUrl">
+     </a>
     </div>
     <slot></slot>
     <!-- Footer -->

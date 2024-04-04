@@ -7,7 +7,12 @@ import {
     writeBatch
 } from 'firebase/firestore'
 
-import { db } from '@/firebase'
+import { ref, onValue, set } from 'firebase/database'
+
+import { db, realtimeDB } from '@/firebase'
+
+import { useAccountStore } from '@/stores/account'
+
 export const useCartStore = defineStore('cart', {
     state: () => ({
         items: [],
@@ -21,16 +26,34 @@ export const useCartStore = defineStore('cart', {
             return state.items.reduce((acc, item) => {
                 return acc + (item.price * item.quantity)
             }, 0)
+        },
+        user (state) {
+            const accountStore = useAccountStore()
+            return accountStore.user
+        },
+        cartRef (state) {
+            return ref(realtimeDB, `carts/${this.user.uid}`)
         }
     },
     actions: {
-        loadCart () {
-            const previousCart = localStorage.getItem('cart-data')
-            if (previousCart) {
-                this.items = JSON.parse(previousCart)
+        async loadCart () {
+            if (this.user.uid) {
+                onValue(this.cartRef, (snapshot) => {
+                    const data = snapshot.val()
+                    if (data) {
+                        this.items = data
+                    }
+                  }, (err) => {
+                    console.log('error', err)
+                  })
+            } else {
+                const previousCart = localStorage.getItem('cart-data')
+                if (previousCart) {
+                    this.items = JSON.parse(previousCart)
+                }
             }
         },
-        addToCart (productData) {
+        async addToCart (productData) {
             const findProductIndex = this.items.findIndex(item => {
                 return item.name === productData.name
             })
@@ -43,14 +66,17 @@ export const useCartStore = defineStore('cart', {
                 this.updateQuantity(findProductIndex, currentItem.quantity + 1)
             }
 
+            await set(this.cartRef, this.items)
             localStorage.setItem('cart-data', JSON.stringify(this.items))
         },
-        updateQuantity (index, quantity) {
+        async updateQuantity (index, quantity) {
             this.items[index].quantity = quantity
+            await set(this.cartRef, this.items)
             localStorage.setItem('cart-data', JSON.stringify(this.items))
         },
-        removeItemInCart (index) {
+        async removeItemInCart (index) {
             this.items.splice(index, 1)
+            await set(this.cartRef, this.items)
             localStorage.setItem('cart-data', JSON.stringify(this.items))
         },
         async placeorder (userData) {

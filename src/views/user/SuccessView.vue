@@ -1,6 +1,7 @@
 <script setup>
 //library
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 
 // component
 import UserLayout from '@/layouts/UserLayout.vue'
@@ -9,14 +10,18 @@ import UserLayout from '@/layouts/UserLayout.vue'
 import { useCartStore } from '@/stores/user/cart'
 
 // config variable
+const route = useRoute()
 const cartStore = useCartStore()
 const orderData = ref({})
 
-onMounted(() => {
-  cartStore.loadCheckout()
-  // console.log(cartStore.checkout)
-  if (cartStore.checkout.orderNumber) {
-    orderData.value = cartStore.checkout
+onMounted(async () => {
+  const orderId = route.query.order_id
+  if (orderId) {
+    try {
+      orderData.value = await cartStore.loadCheckout(orderId)
+    } catch (error) {
+      console.log(error)
+    }
   }
 })
 </script>
@@ -33,7 +38,7 @@ onMounted(() => {
         <div class="grid grid-cols-4 gap-2">
           <div>
             <div class="font-bold">Order date</div>
-            <div>{{ orderData.createdDate }}</div>
+            <div>{{ orderData.createdAt }}</div>
           </div>
           <div>
             <div class="font-bold">Order number</div>

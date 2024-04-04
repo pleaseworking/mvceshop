@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 
+import axios from 'axios'
+
 import {
-    updateDoc,
-    increment,
     doc,
-    writeBatch
+    getDoc
 } from 'firebase/firestore'
 
 import { ref, onValue, set } from 'firebase/database'
@@ -81,36 +81,38 @@ export const useCartStore = defineStore('cart', {
         },
         async placeorder (userData) {
         try {   
-            const orderData = {
+            const checkoutData = {
                 ...userData,
-                totalPrice: this.summaryPrice,
-                paymentMethod: 'Credit Card',
-                createdDate: (new Date()).toLocaleString(),
-                orderNumber: `AA${Math.floor((Math.random() * 90000) + 10000)}`,
-                products: this.items
+                products: this.items.map(product => ({
+                    productId: product.productId,
+                    quantity: product.quantity
+                }))
             }
 
-            const batch = writeBatch(db)
+            console.log('orderData', checkoutData)
 
-            for (const product of orderData.products) {
-                const productRef = doc(db, 'products', product.productId)
-                batch.update(productRef, {
-                    remainQuantity: increment(-1)
-                })
-            }
-
-            await batch.commit()
-
-            localStorage.setItem('order-data', JSON.stringify(orderData))
+            const response = await axios.post('/api/placeorder', {
+                source: 'test_src', // เราจะเพิ่มตอนทำ omise,
+                checkout: checkoutData
+            })
+            return response.data
+            
+            // localStorage.setItem('order-data', JSON.stringify(orderData))
         } catch (error) {
             console.log('error', error)
         }
         },
-        loadCheckout () {
-            const orderData = localStorage.getItem('order-data')
-            if (orderData) {
-                this.checkout = JSON.parse(orderData)
-            }
+        async loadCheckout (orderId) {
+            try {
+                const orderRef = doc(db, 'orders', orderId)
+                const orderSnapshot = await getDoc(orderRef)
+                let orderData = orderSnapshot.data()
+                orderData.createdAt = orderData.createdAt.toDate()
+                orderData.orderNumber = orderSnapshot.id
+                return orderData
+            } catch (error) {
+                console.log('error', error)
+            }            
         }
     }
 })

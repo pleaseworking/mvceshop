@@ -17,8 +17,6 @@ const router = useRouter()
 
 // function
 const addToCart = (product) => {
-  // console.log('Hello add to cart')
-  // console.log(product)
   cartStore.addToCart(product)
   router.push({ name: 'cart' })
 }

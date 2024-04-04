@@ -1,5 +1,13 @@
 import { defineStore } from 'pinia'
 
+import {
+    updateDoc,
+    increment,
+    doc,
+    writeBatch
+} from 'firebase/firestore'
+
+import { db } from '@/firebase'
 export const useCartStore = defineStore('cart', {
     state: () => ({
         items: [],
@@ -7,9 +15,6 @@ export const useCartStore = defineStore('cart', {
     }),
     getters: {
         summaryQuantity (state) {
-            // state.items.reduce((acc, item) => {
-            //     return acc + item.quantity
-            // }, 0)
             return state.items.reduce((acc, item) => acc + item.quantity, 0)
         },
         summaryPrice (state) {
@@ -48,7 +53,8 @@ export const useCartStore = defineStore('cart', {
             this.items.splice(index, 1)
             localStorage.setItem('cart-data', JSON.stringify(this.items))
         },
-        placeorder (userData) {
+        async placeorder (userData) {
+        try {   
             const orderData = {
                 ...userData,
                 totalPrice: this.summaryPrice,
@@ -57,7 +63,22 @@ export const useCartStore = defineStore('cart', {
                 orderNumber: `AA${Math.floor((Math.random() * 90000) + 10000)}`,
                 products: this.items
             }
+
+            const batch = writeBatch(db)
+
+            for (const product of orderData.products) {
+                const productRef = doc(db, 'products', product.productId)
+                batch.update(productRef, {
+                    remainQuantity: increment(-1)
+                })
+            }
+
+            await batch.commit()
+
             localStorage.setItem('order-data', JSON.stringify(orderData))
+        } catch (error) {
+            console.log('error', error)
+        }
         },
         loadCheckout () {
             const orderData = localStorage.getItem('order-data')
